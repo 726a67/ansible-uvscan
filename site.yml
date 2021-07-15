@@ -1,0 +1,5 @@
+---
+- name: udev
+  hosts: localhost
+  roles:
+    - rhel-7-uvscan

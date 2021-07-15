@@ -1,0 +1,53 @@
+---
+- name: FILE | /var/tmp/uvscan/bin
+  file:
+    path: /var/tmp/uvscan/bin
+    state: directory
+    recurse: yes
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: COPY | /var/tmp/uvscan/bin
+  copy:
+    src: "{{ item }}"
+    dest: /var/tmp/uvscan/bin
+    owner: root
+    group: root
+    mode: '0700'
+  with_fileglob: 
+    - "{{ playbook_dir }}/files/bin/*tar.gz"
+
+- name: FILE | /var/tmp/uvscan/def
+  file:
+    path: /var/tmp/uvscan/def
+    state: directory
+    recurse: yes
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: COPY | /var/tmp/uvscan/def
+  copy:
+    src: "{{ item }}"
+    dest: /var/tmp/uvscan/def
+    owner: root
+    group: root
+    mode: '0700'
+  with_fileglob: 
+    - "{{ playbook_dir }}/files/def/*.tar"
+
+- name: TEMPLATE | /usr/local/sbin/uvscan-eval.bash
+  template:
+    src: ../templates/usr/local/sbin/uvscan-eval.bash.j2
+    dest: /usr/local/sbin/uvscan-eval.bash
+    owner: root
+    group: root
+    mode: '0700'
+
+- name: CRON | root | uvscan-eval.bash
+  cron:
+    name: uvscan-eval.bash
+    special_time: daily
+    job: /usr/local/sbin/uvscan-eval.bash
+    user: root

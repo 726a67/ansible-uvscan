@@ -1,0 +1,35 @@
+#!/bin/bash
+
+MAILTO_ADDRESSS=root@localhost
+UPDATE_BIN_DIR=/var/tmp/uvscan/bin
+UPDATE_DEF_DIR=/var/tmp/uvscan/def
+UVSCAN_BASE=/opt/uvscan
+UVSCAN_CMD=${UVSCAN_BASE}/uvscan
+REPORT_FILE=/tmp/uvscan-eval-results.txt
+
+EXCLUDE_FILE=/tmp/uvscan_exclude.txt
+EXCLUDE_DIRS=(
+'/proc'
+'/sys'
+'/dev'
+'/media'
+'/mnt'
+)
+
+mkdir -p ${UVSCAN_BASE} && for BIN_TAR in $(find ${UPDATE_BIN_DIR} -type f -exec ls -tr "{}" + | tail -n 1); do tar -xzf ${BIN_TAR} --directory=${UVSCAN_BASE} --no-same-owner --no-same-permissions; done
+mkdir -p ${UVSCAN_BASE} && for DEF_TAR in $(find ${UPDATE_DEF_DIR} -type f -exec ls -tr "{}" + | tail -n 1); do tar -xf ${DEF_TAR} --directory=${UVSCAN_BASE} --no-same-owner --no-same-permissions; done
+
+printf "%s\n" "${EXCLUDE_DIRS[@]}" > ${EXCLUDE_FILE}
+
+${UVSCAN_CMD} \
+--recursive \
+--one-file-system \
+--ignore-links \
+--selected \
+--summary \
+--silent \
+--exclude ${EXCLUDE_FILE} \
+--report=${REPORT_FILE} / || \
+mail -s "VirusScan alert: ${HOSTNAME}" ${MAILTO_ADDRESS} < ${REPORT_FILE}
+
+rm -f ${EXCLUDE_FILE}
